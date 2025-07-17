@@ -19,10 +19,23 @@ int main() {
     strcat(dir_cmd, "\" /OD /TC");
     printf("Command: %s\n", dir_cmd);
 
-    
-    
-    system(dir_cmd);
-    
-    
+    FILE *fp;
+    int status;
+    char path[PATH_MAX];
+
+    fp = popen(dir_cmd, "r");
+    if (fp == NULL) {
+        printf("Error executing dir command!\n");
+        return -1;
+    }
+
+    while (fgets(path, PATH_MAX, fp) != NULL)
+    printf("Files: %s", path);
+
+    status = pclose(fp);
+    if (status == -1) {
+        printf("Error during pclose!");
+        return -1;
+    }
     return 0;
 }
