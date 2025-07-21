@@ -13,10 +13,6 @@ int main() {
         return 1;
     }
 
-    char source_path_copy[PATH_MAX];
-    
-    strncpy(source_path_copy, source_path, strlen(source_path)-1);
-
     printf("Where should the copys go?\n");
     fgets(destination_path, sizeof(destination_path), stdin);
     if (destination_path == NULL) {
@@ -36,7 +32,7 @@ int main() {
     char dir_cmd[PATH_MAX];
     strcpy(dir_cmd, "dir \"");
     strncat(dir_cmd, source_path, strlen(source_path)-1); //strlen(source_path)-1 is added to not copy a trailing linebreak which causes problems with the cli command.
-    strcat(dir_cmd, "\" /a-d /od /tc");
+    strcat(dir_cmd, "\" /a-d-h /od /tc");
 
     char dir_cmd_for_names[PATH_MAX];
     strcpy(dir_cmd_for_names, dir_cmd);
@@ -65,36 +61,51 @@ int main() {
     
     char *date;
     char *name;
-    char make_dir_cmd[PATH_MAX];
+    char destination[PATH_MAX];
+    char mkdir_cmd[PATH_MAX];
+    char copy_cmd[PATH_MAX];
     
     
-    
-    while (fgets(file, PATH_MAX, dir_cmd_output) != NULL || fgets(file_names, PATH_MAX, file_names_dir_cmd_output))   {
+    while (fgets(file, PATH_MAX, dir_cmd_output) != NULL)   {
         if (strchr(file, ' ') == file || strchr(file, '\\') == file || strrchr(file, ' ') == NULL) {
             continue;
         }
-        strcpy(make_dir_cmd, "");
         
-        strcat(make_dir_cmd, "mkdir ");
-        strncat(make_dir_cmd, destination_path, strlen(destination_path)-1);
-        //Grab the date the file was created, I know this looks awful but it's what i know works and I really just wanna get this first project working. Getting style points for clean code isn't the goal of my first personal project. 
-        strcat(make_dir_cmd, "\\");
+        strcpy(mkdir_cmd, "mkdir ");
+        strcpy(destination, "\"");
+        strcpy(copy_cmd, "copy \"");
+        
+        
+        strncat(destination, destination_path, strlen(destination_path)-1);
+        strcat(destination, "\\");
+        //Grab the date the file was created and finish destiantion file path, I know this looks awful but it's what i know works and I really just wanna get this first project working. Getting style points for clean code isn't the goal of my first personal project. 
         date = strtok(file, "-");
-        strcat(make_dir_cmd, date);
-        strcat(make_dir_cmd, "\\");
+        strcat(destination, date); //Year
+        strcat(destination, "\\");
+        
         date = strtok(NULL, "-");
-        strcat(make_dir_cmd, date);
-        strcat(make_dir_cmd, "\\");
+        strcat(destination, date); //Month
+        strcat(destination, "\\");
+        
         date = strtok(NULL, "  ");
-        strcat(make_dir_cmd, date);
+        strcat(destination, date); // Day
+        strcat(destination, "\"");
         
-        printf("make dir cmd: %s\n", make_dir_cmd);
+        //Creates all folders for year, month and day, if folders already exist does nothing
+        strcat(mkdir_cmd, destination);
+        printf("mkdir cmd: %s\n", mkdir_cmd);
+        system(mkdir_cmd);
 
+        //Finish the Copy cmd and copy the file.
+        fgets(file_names, PATH_MAX, file_names_dir_cmd_output);
         
-        //Complete the target folder file path, if folders already exist does nothing
-        //TODO: get this part to work. system(mkdir C:\dir\path\name\) works, but getting the full path name is fucking impossible with how shit the string manipulations are in C.
-        
+        strncat(copy_cmd, source_path, strlen(source_path)-1);
+        strcat(copy_cmd, "\\");
+        strncat(copy_cmd, file_names, strlen(file_names)-1);
+        strcat(copy_cmd, "\" ");
+        strcat(copy_cmd, destination);
 
+        system(copy_cmd);
 
     }
 
